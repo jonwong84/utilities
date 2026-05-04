@@ -1,2 +1,2 @@
-# utilities-configuration
-A configuration utility for my projects.
+# utilities
+A collection of utilities for my projects.
