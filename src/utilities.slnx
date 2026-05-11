@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/Utilities.Configuration/">
-    <Project Path="Utilities.Configuration.csproj" />
+    <Project Path="Configuration/Contracts/Utilities.Configuration.Contracts/Utilities.Configuration.Contracts.csproj" Id="1ea85b40-26f0-42cd-9f10-9a4cf1fb69a6" />
+    <Project Path="Configuration/Implementation/Utilities.Configuration.csproj" />
+    <Project Path="Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" Id="fed02a6a-e1a4-43fd-8de6-e19ef8a574b4" />
   </Folder>
 </Solution>
