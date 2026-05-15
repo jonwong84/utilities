@@ -63,6 +63,10 @@ jobs:
               --password "$GITHUB_TOKEN" \
               --store-password-in-clear-text
       - run:
+          name: Restore dependencies
+          command: |
+            dotnet restore "src/Configuration/Implementation/Utilities.Configuration.csproj"
+      - run:
           name: Pack
           command: |
             dotnet pack "src/Configuration/Implementation/Utilities.Configuration.csproj" \
