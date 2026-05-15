@@ -1,29 +1,97 @@
 version: 2.1
 
 jobs:
-  build-and-publish:
+  build-and-test:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
       - run:
           name: Restore dependencies
-          command: dotnet restore
+          command: |
+            dotnet restore "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj"
       - run:
-          name: Build project
-          command: dotnet build --configuration Release
+          name: Build
+          command: |
+            dotnet build "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj" \
+              --configuration Release \
+              --no-restore
       - run:
-          name: Pack NuGet package
-          command: dotnet pack Configuration/Implementation/Utilities.Configuration.csproj --configuration Release
+          name: Run tests
+          command: |
+            dotnet test "utilities/src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
+              --configuration Release \
+              --no-restore \
+              --logger "trx;LogFileName=test-results.trx" \
+              --results-directory ./test-results
+      - store_test_results:
+          path: ./test-results
+
+  publish:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+      - checkout
+      - run:
+          name: Install Node.js and changelog-parser
+          command: |
+            apt-get update && apt-get install -y nodejs npm
+            npm install -g changelog-parser
+      - run:
+          name: Resolve package version
+          command: |
+            BASE_VERSION=$(changelog-parser utilities/CHANGELOG.md | \
+              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
+                const releases=JSON.parse(d).versions.filter(v=>v.version); \
+                console.log(releases[0].version);")
+
+            if [ "$CIRCLE_BRANCH" = "main" ]; then
+              PACKAGE_VERSION="$BASE_VERSION"
+            else
+              DATETIME=$(date -u +"%Y%m%d%H%M%S")
+              PACKAGE_VERSION="${BASE_VERSION}-beta${DATETIME}"
+            fi
+
+            echo "Resolved version: $PACKAGE_VERSION"
+            echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
+      - run:
+          name: Register GitHub Packages source
+          command: |
+            dotnet nuget add source "https://nuget.pkg.github.com/jonwong84/index.json" \
+              --name "github" \
+              --username "jonwong84" \
+              --password "$GITHUB_TOKEN" \
+              --store-password-in-clear-text
+      - run:
+          name: Pack
+          command: |
+            dotnet pack "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj" \
+              --configuration Release \
+              --no-restore \
+              /p:Version=$PACKAGE_VERSION \
+              --output ./artifacts
       - run:
           name: Publish to GitHub Packages
           command: |
-            dotnet nuget push Configuration/Implementation/bin/Release/Utilities.Configuration.*.nupkg \
-              --api-key ${GITHUB_TOKEN} \
-              --source "https://nuget.pkg.github.com/jonwong84/index.json"
+            dotnet nuget push ./artifacts/*.nupkg \
+              --api-key "$GITHUB_TOKEN" \
+              --source "github" \
+              --skip-duplicate
 
 workflows:
-  version: 2
-  build_and_publish:
+  build-test-publish:
     jobs:
-      - build-and-publish
+      - build-and-test:
+          filters:
+            branches:
+              only:
+                - main
+                - /^feature\/.*/
+      - publish:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only:
+                - main
+                - /^feature\/.*/
