@@ -88,6 +88,7 @@ workflows:
                 - main
                 - /^feature\/.*/
       - publish:
+          context: global-v1
           requires:
             - build-and-test
           filters:
