@@ -9,17 +9,17 @@ jobs:
       - run:
           name: Restore dependencies
           command: |
-            dotnet restore "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj"
+            dotnet restore "src/Configuration/Implementation/Utilities.Configuration.csproj"
       - run:
           name: Build
           command: |
-            dotnet build "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj" \
+            dotnet build "src/Configuration/Implementation/Utilities.Configuration.csproj" \
               --configuration Release \
               --no-restore
       - run:
           name: Run tests
           command: |
-            dotnet test "utilities/src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
+            dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
               --configuration Release \
               --no-restore \
               --logger "trx;LogFileName=test-results.trx" \
@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Resolve package version
           command: |
-            BASE_VERSION=$(changelog-parser utilities/CHANGELOG.md | \
+            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
               node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
                 const releases=JSON.parse(d).versions.filter(v=>v.version); \
                 console.log(releases[0].version);")
@@ -65,7 +65,7 @@ jobs:
       - run:
           name: Pack
           command: |
-            dotnet pack "utilities/src/Configuration/Implementation/Utilities.Configuration.csproj" \
+            dotnet pack "src/Configuration/Implementation/Utilities.Configuration.csproj" \
               --configuration Release \
               --no-restore \
               /p:Version=$PACKAGE_VERSION \
