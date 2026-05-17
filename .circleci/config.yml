@@ -55,13 +55,12 @@ jobs:
             dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
               --configuration Release \
               --no-restore \
-              --collect:"XPlat Code Coverage" \
-              --results-directory ./coverage
+              --collect:"XPlat Code Coverage"
       - run:
           name: Begin SonarScan
           command: |
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
-            COVERAGE_REPORT=$(find ./coverage -name "coverage.opencover.xml" | head -1)
+            COVERAGE_REPORT=$(find . -name "coverage.opencover.xml" | head -1)
             echo "Coverage report: $COVERAGE_REPORT"
             dotnet sonarscanner begin \
               /k:"jonwong84_utilities" \
