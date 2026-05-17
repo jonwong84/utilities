@@ -54,13 +54,22 @@ jobs:
               /d:sonar.token="$SONAR_TOKEN" \
               /d:sonar.pullrequest.key="$PR_NUMBER" \
               /d:sonar.pullrequest.branch="$CIRCLE_BRANCH" \
-              /d:sonar.pullrequest.base="main"
+              /d:sonar.pullrequest.base="main" \
+              /d:sonar.cs.opencover.reportsPaths="./coverage/**/coverage.opencover.xml"
       - run:
           name: Build
           command: |
             dotnet build "src/Configuration/Implementation/Utilities.Configuration.csproj" \
               --configuration Release \
               --no-restore
+      - run:
+          name: Run tests with coverage
+          command: |
+            dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
+              --configuration Release \
+              --no-restore \
+              --collect:"XPlat Code Coverage" \
+              --results-directory ./coverage
       - run:
           name: End SonarScan
           command: |
