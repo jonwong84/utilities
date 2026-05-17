@@ -7,21 +7,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install SonarScanner
-          command: |
-            dotnet tool install --global dotnet-sonarscanner
-            export PATH="$PATH:/root/.dotnet/tools"
-            echo 'export PATH="$PATH:/root/.dotnet/tools"' >> $BASH_ENV
-      - run:
-          name: Begin SonarScan
-          command: |
-            dotnet sonarscanner begin \
-              /k:"jonwong84_utilities" \
-              /o:"jonwong84" \
-              /d:sonar.host.url="https://sonarcloud.io" \
-              /d:sonar.token="$SONAR_TOKEN" \
-              /d:sonar.branch.name="$CIRCLE_BRANCH"
-      - run:
           name: Restore dependencies
           command: |
             dotnet restore "src/Configuration/Implementation/Utilities.Configuration.csproj"
@@ -42,6 +27,39 @@ jobs:
               --results-directory ./test-results
       - store_test_results:
           path: ./test-results
+
+  sonar-scan:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+      - checkout
+      - run:
+          name: Install SonarScanner
+          command: |
+            dotnet tool install --global dotnet-sonarscanner
+            export PATH="$PATH:/root/.dotnet/tools"
+            echo 'export PATH="$PATH:/root/.dotnet/tools"' >> $BASH_ENV
+      - run:
+          name: Restore dependencies
+          command: |
+            dotnet restore "src/Configuration/Implementation/Utilities.Configuration.csproj"
+      - run:
+          name: Begin SonarScan
+          command: |
+            dotnet sonarscanner begin \
+              /k:"jonwong84_utilities" \
+              /o:"jonwong84" \
+              /d:sonar.host.url="https://sonarcloud.io" \
+              /d:sonar.token="$SONAR_TOKEN" \
+              /d:sonar.pullrequest.key="$CIRCLE_PULL_REQUEST_NUMBER" \
+              /d:sonar.pullrequest.branch="$CIRCLE_BRANCH" \
+              /d:sonar.pullrequest.base="main"
+      - run:
+          name: Build
+          command: |
+            dotnet build "src/Configuration/Implementation/Utilities.Configuration.csproj" \
+              --configuration Release \
+              --no-restore
       - run:
           name: End SonarScan
           command: |
@@ -107,11 +125,18 @@ workflows:
   build-test-publish:
     jobs:
       - build-and-test:
-          context: global-v1
           filters:
             branches:
               only:
                 - main
+                - /^feature\/.*/
+      - sonar-scan:
+          context: global-v1
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only:
                 - /^feature\/.*/
       - publish:
           context: global-v1
