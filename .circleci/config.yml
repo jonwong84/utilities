@@ -76,6 +76,10 @@ jobs:
               /p:CoverletOutputFormat=opencover \
               /p:CoverletOutput=./coverage.opencover.xml
       - run:
+          name: Debug
+          command: |
+            find . -name "*.xml" | grep -i cover
+      - run:
           name: End SonarScan
           command: |
             dotnet sonarscanner end \
