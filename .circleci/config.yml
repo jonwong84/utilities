@@ -63,6 +63,10 @@ jobs:
               --configuration Release \
               --no-restore
       - run:
+          name: Restore test dependencies
+          command: |
+            dotnet restore "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj"
+      - run:
           name: Run tests with coverage
           command: |
             dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
@@ -71,10 +75,6 @@ jobs:
               /p:CollectCoverage=true \
               /p:CoverletOutputFormat=opencover \
               /p:CoverletOutput=./coverage.opencover.xml
-      - run:
-          name: Debug Step
-          command: |
-            find . -name "*.xml" | grep -i cover
       - run:
           name: End SonarScan
           command: |
