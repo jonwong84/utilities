@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
+            dotnet test "src/Configuration/Test/Utilities.Configuration.Test.csproj" \
               --configuration Release \
               --no-restore \
               --verbosity detailed \
@@ -47,7 +47,7 @@ jobs:
           name: Begin SonarScan
           command: |
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
-            COVERAGE_REPORT="$PWD/src/Configuration/Test/Utilities.Configuration.Test/coverage.opencover.xml"
+            COVERAGE_REPORT="$PWD/src/Configuration/Test/coverage.opencover.xml"
             dotnet sonarscanner begin \
               /k:"jonwong84_utilities" \
               /o:"jonwong84" \
@@ -56,7 +56,9 @@ jobs:
               /d:sonar.pullrequest.key="$PR_NUMBER" \
               /d:sonar.pullrequest.branch="$CIRCLE_BRANCH" \
               /d:sonar.pullrequest.base="main" \
-              /d:sonar.cs.opencover.reportsPaths="$COVERAGE_REPORT"
+              /d:sonar.cs.opencover.reportsPaths="$COVERAGE_REPORT" \
+              /d:sonar.tests="src/Configuration/Test" \
+              /d:sonar.test.inclusions="**/*Test*.cs"
       - run:
           name: Build
           command: |
@@ -66,11 +68,11 @@ jobs:
       - run:
           name: Restore test dependencies
           command: |
-            dotnet restore "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj"
+            dotnet restore "src/Configuration/Test/Utilities.Configuration.Test.csproj"
       - run:
           name: Run tests with coverage
           command: |
-            dotnet test "src/Configuration/Test/Utilities.Configuration.Test/Utilities.Configuration.Test.csproj" \
+            dotnet test "src/Configuration/Test/Utilities.Configuration.Test.csproj" \
               --configuration Release \
               --no-restore \
               /p:CollectCoverage=true \
@@ -81,10 +83,6 @@ jobs:
           command: |
             dotnet sonarscanner end \
               /d:sonar.token="$SONAR_TOKEN"
-      - run:
-          name: Debug
-          command: |
-            cat ~/.sonarscanner/.sonar/sonar-scanner.log
 
   publish:
     docker:
