@@ -58,7 +58,7 @@ jobs:
               /d:sonar.pullrequest.base="main" \
               /d:sonar.cs.opencover.reportsPaths="$COVERAGE_REPORT" \
               /d:sonar.tests="src/Configuration/Test" \
-              /d:sonar.test.inclusions="**/*Test*.cs"
+              /d:sonar.test.inclusions="src/Configuration/Test/**/*.cs"
       - run:
           name: Build
           command: |
