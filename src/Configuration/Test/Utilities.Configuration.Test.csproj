@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Contracts\Utilities.Configuration.Contracts\Utilities.Configuration.Contracts.csproj" />
     <ProjectReference Include="..\..\Implementation\Utilities.Configuration.csproj" />
   </ItemGroup>
 
