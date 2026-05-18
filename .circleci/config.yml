@@ -81,6 +81,10 @@ jobs:
           command: |
             dotnet sonarscanner end \
               /d:sonar.token="$SONAR_TOKEN"
+      - run:
+          name: Debug
+          command: |
+            cat ~/.sonarscanner/.sonar/sonar-scanner.log
 
   publish:
     docker:
